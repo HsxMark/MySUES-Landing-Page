@@ -169,6 +169,52 @@ const features = [
 const APP_SLUG = "mysues";
 const IOS_DEFAULT_URL = "https://testflight.apple.com/join/sFcAxekc";
 
+// ---- 无后端静态部署配置（可选）----
+// 远程无 PostgreSQL/后端时, 下载区使用以下静态配置兜底, 页面完整可用。
+// 可在 frontend/.env.local 中覆盖:
+//   NEXT_PUBLIC_ANDROID_URL      Android 安装包直链 / 下载页
+//   NEXT_PUBLIC_ANDROID_VERSION  Android 版本号
+//   NEXT_PUBLIC_ANDROID_FILENAME Android 文件名
+//   NEXT_PUBLIC_ANDROID_SIZE     Android 文件大小 (字节)
+const STATIC_ANDROID_URL =
+  process.env.NEXT_PUBLIC_ANDROID_URL ||
+  "https://github.com/HsxMark/MySUES/releases/latest";
+const STATIC_ANDROID_VERSION =
+  process.env.NEXT_PUBLIC_ANDROID_VERSION || "1.0.0";
+const STATIC_ANDROID_FILENAME =
+  process.env.NEXT_PUBLIC_ANDROID_FILENAME || "sanxuanyi.apk";
+const STATIC_ANDROID_SIZE = Number(process.env.NEXT_PUBLIC_ANDROID_SIZE) || 0;
+
+function staticAndroidRelease(): AppReleaseResponse {
+  return {
+    app_id: "static",
+    slug: APP_SLUG,
+    name: "三旋翼课程表",
+    platform: "android",
+    current_version: null,
+    current_build_number: null,
+    latest_version: {
+      id: "static",
+      app_id: "static",
+      platform: "android",
+      version: STATIC_ANDROID_VERSION,
+      build_number: 0,
+      min_supported_build_number: null,
+      changelog: null,
+      file_url: STATIC_ANDROID_URL,
+      external_url: null,
+      filename: STATIC_ANDROID_FILENAME,
+      file_size: STATIC_ANDROID_SIZE,
+      content_type: "application/vnd.android.package-archive",
+      download_count: 0,
+      created_at: new Date().toISOString(),
+    },
+    update_available: false,
+    update_required: false,
+    update_url: STATIC_ANDROID_URL,
+  };
+}
+
 export default function Home() {
   const [showHistory, setShowHistory] = useState(false);
   const [appData, setAppData] = useState<AppDetailResponse | null>(null);
@@ -192,13 +238,16 @@ export default function Home() {
       if (androidRes.ok) {
         const detail: AppReleaseResponse = await androidRes.json();
         setAndroidRelease(detail);
+      } else {
+        setAndroidRelease(staticAndroidRelease());
       }
       if (iosRes.ok) {
         const detail: AppReleaseResponse = await iosRes.json();
         setIosRelease(detail);
       }
     } catch {
-      // silently fail, page will show fallback
+      // 后端不可用 → 使用静态配置兜底，保证下载区可正常展示
+      setAndroidRelease(staticAndroidRelease());
     } finally {
       setLoading(false);
     }
