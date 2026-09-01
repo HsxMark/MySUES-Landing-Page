@@ -22,47 +22,33 @@ import {
 } from "react-icons/fa";
 import Head from "next/head";
 
-interface AppVersionResponse {
-  id: string;
-  app_id: string;
-  platform: string;
-  version: string;
-  build_number: number;
-  min_supported_build_number: number | null;
-  changelog: string | null;
-  file_url: string | null;
-  external_url: string | null;
-  filename: string;
-  file_size: number;
+// ---- GitHub Release API types ----
+interface GitHubAsset {
+  name: string;
+  size: number;
+  browser_download_url: string;
   content_type: string;
   download_count: number;
-  created_at: string;
 }
 
-interface AppDetailResponse {
-  id: string;
+interface GitHubRelease {
+  tag_name: string;
   name: string;
-  slug: string;
-  description: string | null;
-  platform: string | null;
-  icon_image_id: string | null;
+  body: string | null;
   created_at: string;
-  updated_at: string;
-  latest_version: AppVersionResponse | null;
-  versions: AppVersionResponse[];
+  assets: GitHubAsset[];
 }
 
-interface AppReleaseResponse {
-  app_id: string;
-  slug: string;
-  name: string;
+// Unified version info for display
+interface VersionInfo {
+  version: string;
+  changelog: string | null;
+  filename: string;
+  file_size: number;
+  download_url: string;
+  download_count: number;
+  created_at: string;
   platform: string;
-  current_version: string | null;
-  current_build_number: number | null;
-  latest_version: AppVersionResponse | null;
-  update_available: boolean;
-  update_required: boolean;
-  update_url: string | null;
 }
 
 function formatFileSize(bytes: number): string {
@@ -166,116 +152,110 @@ const features = [
   },
 ];
 
-const APP_SLUG = "mysues";
 const IOS_DEFAULT_URL = "https://testflight.apple.com/join/sFcAxekc";
+const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO || "HsxMark/MySUES";
 
-// ---- 无后端静态部署配置（可选）----
-// 远程无 PostgreSQL/后端时, 下载区使用以下静态配置兜底, 页面完整可用。
-// 可在 frontend/.env.local 中覆盖:
-//   NEXT_PUBLIC_ANDROID_URL      Android 安装包直链 / 下载页
-//   NEXT_PUBLIC_ANDROID_VERSION  Android 版本号
-//   NEXT_PUBLIC_ANDROID_FILENAME Android 文件名
-//   NEXT_PUBLIC_ANDROID_SIZE     Android 文件大小 (字节)
-const STATIC_ANDROID_URL =
-  process.env.NEXT_PUBLIC_ANDROID_URL ||
-  "https://github.com/HsxMark/MySUES/releases/latest";
-const STATIC_ANDROID_VERSION =
-  process.env.NEXT_PUBLIC_ANDROID_VERSION || "1.0.0";
-const STATIC_ANDROID_FILENAME =
-  process.env.NEXT_PUBLIC_ANDROID_FILENAME || "sanxuanyi.apk";
-const STATIC_ANDROID_SIZE = Number(process.env.NEXT_PUBLIC_ANDROID_SIZE) || 0;
+// ---- 可选：自定义 API 代理 / 下载代理 ----
+// NEXT_PUBLIC_RELEASES_API_URL  替代 GitHub Releases API，支持 {repo} 占位符
+//   例: https://example.com/api/{repo}/releases  →  https://example.com/api/HsxMark/MySUES/releases
+//   例: https://eg.example.com/api/latest        →  直接使用
+// 未设置时回退到 https://api.github.com/repos/{repo}/releases
+//
+// NEXT_PUBLIC_DOWNLOAD_PROXY_URL  替代 browser_download_url，支持 {tag} {file} 占位符
+//   例: https://example.com/api/releases/download?tag={tag}&file={file}
+// 未设置时直接使用原始 browser_download_url
+const RELEASES_API_URL = (
+  process.env.NEXT_PUBLIC_RELEASES_API_URL ||
+  `https://api.github.com/repos/${GITHUB_REPO}/releases`
+).replace(/{repo}/g, GITHUB_REPO);
 
-function staticAndroidRelease(): AppReleaseResponse {
+const DOWNLOAD_PROXY_BASE = process.env.NEXT_PUBLIC_DOWNLOAD_PROXY_URL || "";
+
+function resolveDownloadUrl(release: GitHubRelease, filename: string): string {
+  if (DOWNLOAD_PROXY_BASE) {
+    return DOWNLOAD_PROXY_BASE.replace(/{tag}/g, release.tag_name).replace(
+      /{file}/g,
+      encodeURIComponent(filename),
+    );
+  }
+  const asset = release.assets.find((a) => a.name === filename);
+  return (
+    asset?.browser_download_url ||
+    `https://github.com/${GITHUB_REPO}/releases/download/${release.tag_name}/${filename}`
+  );
+}
+
+// ---- GitHub Release → VersionInfo 映射 ----
+function mapReleaseToVersion(release: GitHubRelease): VersionInfo | null {
+  // 找 Android APK asset
+  const apk = release.assets.find(
+    (a) =>
+      a.name.toLowerCase().endsWith(".apk") ||
+      a.content_type.includes("android"),
+  );
+  if (!apk) return null;
   return {
-    app_id: "static",
-    slug: APP_SLUG,
-    name: "三旋翼课程表",
+    version: release.tag_name.replace(/^v/i, ""),
+    changelog: release.body,
+    filename: apk.name,
+    file_size: apk.size,
+    download_url: resolveDownloadUrl(release, apk.name),
+    download_count: apk.download_count,
+    created_at: release.created_at,
     platform: "android",
-    current_version: null,
-    current_build_number: null,
-    latest_version: {
-      id: "static",
-      app_id: "static",
-      platform: "android",
-      version: STATIC_ANDROID_VERSION,
-      build_number: 0,
-      min_supported_build_number: null,
-      changelog: null,
-      file_url: STATIC_ANDROID_URL,
-      external_url: null,
-      filename: STATIC_ANDROID_FILENAME,
-      file_size: STATIC_ANDROID_SIZE,
-      content_type: "application/vnd.android.package-archive",
-      download_count: 0,
-      created_at: new Date().toISOString(),
-    },
-    update_available: false,
-    update_required: false,
-    update_url: STATIC_ANDROID_URL,
   };
 }
 
 export default function Home() {
   const [showHistory, setShowHistory] = useState(false);
-  const [appData, setAppData] = useState<AppDetailResponse | null>(null);
-  const [androidRelease, setAndroidRelease] =
-    useState<AppReleaseResponse | null>(null);
-  const [iosRelease, setIosRelease] = useState<AppReleaseResponse | null>(null);
+  const [versions, setVersions] = useState<VersionInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAppData = useCallback(async () => {
+  const fetchReleases = useCallback(async () => {
     try {
-      const [appRes, androidRes, iosRes] = await Promise.all([
-        fetch(`/api/apps/by-slug/${APP_SLUG}`),
-        fetch(`/api/apps/by-slug/${APP_SLUG}/release?platform=android`),
-        fetch(`/api/apps/by-slug/${APP_SLUG}/release?platform=ios`),
-      ]);
-
-      if (appRes.ok) {
-        const detail: AppDetailResponse = await appRes.json();
-        setAppData(detail);
-      }
-      if (androidRes.ok) {
-        const detail: AppReleaseResponse = await androidRes.json();
-        setAndroidRelease(detail);
-      } else {
-        setAndroidRelease(staticAndroidRelease());
-      }
-      if (iosRes.ok) {
-        const detail: AppReleaseResponse = await iosRes.json();
-        setIosRelease(detail);
-      }
+      const res = await fetch(RELEASES_API_URL, {
+        headers: { Accept: "application/vnd.github+json" },
+      });
+      if (!res.ok) throw new Error(`Releases API ${res.status}`);
+      const releases: GitHubRelease[] = await res.json();
+      const mapped = releases
+        .map(mapReleaseToVersion)
+        .filter(Boolean) as VersionInfo[];
+      setVersions(mapped);
     } catch {
-      // 后端不可用 → 使用静态配置兜底，保证下载区可正常展示
-      setAndroidRelease(staticAndroidRelease());
+      // API 不可用时使用静态兜底
+      const fallback: VersionInfo = {
+        version: "1.0.0",
+        changelog: null,
+        filename: "sanxuanyi.apk",
+        file_size: 0,
+        download_url: DOWNLOAD_PROXY_BASE
+          ? DOWNLOAD_PROXY_BASE.replace(/{tag}/g, "v1.0.0").replace(
+              /{file}/g,
+              encodeURIComponent("sanxuanyi.apk"),
+            )
+          : `https://github.com/${GITHUB_REPO}/releases/latest`,
+        download_count: 0,
+        created_at: new Date().toISOString(),
+        platform: "android",
+      };
+      setVersions([fallback]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchAppData();
-  }, [fetchAppData]);
+    fetchReleases();
+  }, [fetchReleases]);
 
-  const androidLatest = androidRelease?.latest_version ?? null;
-  const iosLatest = iosRelease?.latest_version ?? null;
-  const iosFallbackVersion =
-    !iosLatest && appData?.latest_version?.external_url
-      ? appData.latest_version
-      : null;
-  const iosDisplayVersion = iosLatest ?? iosFallbackVersion;
-  const iosUpdateUrl =
-    iosRelease?.update_url ?? iosFallbackVersion?.external_url ?? null;
-  const olderVersions = useMemo(
-    () => appData?.versions.slice() ?? [],
-    [appData],
-  );
+  const androidLatest = versions.length > 0 ? versions[0] : null;
+  const iosUpdateUrl = IOS_DEFAULT_URL;
+  const olderVersions = useMemo(() => versions.slice(1), [versions]);
 
   const importantNotice = androidLatest
-    ? `🎉 重要提示：Android 最新版 v${androidLatest.version}-build.${androidLatest.build_number} 已发布，推荐尽快更新。`
-    : iosDisplayVersion
-      ? `🎉 重要提示：iOS 最新版 v${iosDisplayVersion.version}-build.${iosDisplayVersion.build_number} 已发布，欢迎前往 TestFlight 更新。`
-      : null;
+    ? `🎉 重要提示：Android 最新版 v${androidLatest.version} 已发布，推荐尽快更新。`
+    : null;
 
   const openUrl = (url: string | null | undefined) => {
     if (url) {
@@ -541,27 +521,12 @@ export default function Home() {
                       </span>
                     </Chip>
                     <span>
-                      build {androidLatest.build_number} ·{" "}
                       {androidLatest.filename} (
                       {formatFileSize(androidLatest.file_size)})
                     </span>
                   </div>
                 )}
-                {iosDisplayVersion && (
-                  <div className="flex items-center gap-2 text-sm text-[var(--muted)]">
-                    <Chip variant="soft" size="sm">
-                      <span className="flex items-center gap-1.5">
-                        <FaApple className="h-3 w-3" />v
-                        {iosDisplayVersion.version}
-                      </span>
-                    </Chip>
-                    <span>
-                      build {iosDisplayVersion.build_number} · TestFlight / App
-                      Store
-                    </span>
-                  </div>
-                )}
-                {!androidLatest && !iosDisplayVersion && (
+                {!androidLatest && (
                   <span className="text-sm text-[var(--muted)]">
                     暂无版本信息
                   </span>
@@ -594,8 +559,8 @@ export default function Home() {
               size="lg"
               variant="primary"
               className="px-8 font-semibold"
-              isDisabled={!androidRelease?.update_url}
-              onPress={() => openUrl(androidRelease?.update_url)}
+              isDisabled={!androidLatest?.download_url}
+              onPress={() => openUrl(androidLatest?.download_url)}
             >
               <FaAndroid className="mr-2 h-5 w-5" />
               {androidLatest
@@ -640,59 +605,48 @@ export default function Home() {
                   className="overflow-hidden"
                 >
                   <div className="mt-4 space-y-3">
-                    {olderVersions.map((v, index) => {
-                      const href =
-                        v.platform === "ios"
-                          ? v.external_url
-                          : `/api/apps/${v.app_id}/versions/${v.id}/download/${encodeURIComponent(v.filename)}`;
-                      return (
-                        <div
-                          key={v.id}
-                          className={`flex items-center justify-between rounded-lg px-4 py-3 ${
-                            index === 0
-                              ? "border border-[var(--accent)]/30 bg-[var(--accent)]/5"
-                              : "border border-[var(--border)]"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            {index === 0 && (
-                              <Chip variant="soft" size="sm" color="accent">
-                                最新
-                              </Chip>
-                            )}
-                            <Chip size="sm" variant="soft">
-                              {formatPlatform(v.platform)}
+                    {olderVersions.map((v, index) => (
+                      <div
+                        key={`${v.version}-${v.created_at}`}
+                        className={`flex items-center justify-between rounded-lg px-4 py-3 ${
+                          index === 0
+                            ? "border border-[var(--accent)]/30 bg-[var(--accent)]/5"
+                            : "border border-[var(--border)]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {index === 0 && (
+                            <Chip variant="soft" size="sm" color="accent">
+                              最新
                             </Chip>
-                            <span className="text-sm font-medium">
-                              v{v.version}
-                            </span>
-                            <span className="text-xs text-[var(--muted)]">
-                              build {v.build_number}
-                            </span>
-                            <span className="text-xs text-[var(--muted)]">
-                              {v.platform === "android"
-                                ? formatFileSize(v.file_size)
-                                : "外部更新链接"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs text-[var(--muted)]">
-                              {formatDate(v.created_at)}
-                            </span>
-                            {href && (
-                              <a
-                                href={href}
-                                className="text-xs text-[var(--accent)] hover:underline"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <FaDownload className="inline h-3 w-3" />
-                              </a>
-                            )}
-                          </div>
+                          )}
+                          <Chip size="sm" variant="soft">
+                            {formatPlatform(v.platform)}
+                          </Chip>
+                          <span className="text-sm font-medium">
+                            v{v.version}
+                          </span>
+                          <span className="text-xs text-[var(--muted)]">
+                            {formatFileSize(v.file_size)}
+                          </span>
                         </div>
-                      );
-                    })}
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-[var(--muted)]">
+                            {formatDate(v.created_at)}
+                          </span>
+                          {v.download_url && (
+                            <a
+                              href={v.download_url}
+                              className="text-xs text-[var(--accent)] hover:underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <FaDownload className="inline h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
 
                     {olderVersions.length === 0 && (
                       <div className="py-4 text-center text-sm text-[var(--muted)]">
