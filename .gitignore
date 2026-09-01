@@ -1,0 +1,5 @@
+docker-compose.yml
+.DS_Store
+.vscode
+postgres_data
+app_cache
