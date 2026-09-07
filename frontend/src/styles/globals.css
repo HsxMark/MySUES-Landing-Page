@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+:root {
+  --filing-banner-height: calc(2.75rem + env(safe-area-inset-bottom, 0px));
+}
+
 /*
  * HeroUI Theme Customization
  * Only includes base variables from variables.css
@@ -88,7 +92,12 @@
   --font-mono: var(--font-ibm-plex-mono);
 }
 
+html {
+  scroll-padding-bottom: var(--filing-banner-height);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
+  padding-bottom: var(--filing-banner-height);
 }

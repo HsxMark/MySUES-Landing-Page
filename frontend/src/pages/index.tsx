@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
 import { PageNavBar } from "@/components/page-nav-bar";
@@ -251,7 +251,6 @@ export default function Home() {
 
   const androidLatest = versions.length > 0 ? versions[0] : null;
   const iosUpdateUrl = IOS_DEFAULT_URL;
-  const olderVersions = useMemo(() => versions.slice(1), [versions]);
 
   const importantNotice = androidLatest
     ? `🎉 重要提示：Android 最新版 v${androidLatest.version} 已发布，推荐尽快更新。`
@@ -605,17 +604,17 @@ export default function Home() {
                   className="overflow-hidden"
                 >
                   <div className="mt-4 space-y-3">
-                    {olderVersions.map((v, index) => (
+                    {versions.map((v) => (
                       <div
                         key={`${v.version}-${v.created_at}`}
                         className={`flex items-center justify-between rounded-lg px-4 py-3 ${
-                          index === 0
+                          v === androidLatest
                             ? "border border-[var(--accent)]/30 bg-[var(--accent)]/5"
                             : "border border-[var(--border)]"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          {index === 0 && (
+                          {v === androidLatest && (
                             <Chip variant="soft" size="sm" color="accent">
                               最新
                             </Chip>
@@ -648,7 +647,7 @@ export default function Home() {
                       </div>
                     ))}
 
-                    {olderVersions.length === 0 && (
+                    {versions.length === 0 && (
                       <div className="py-4 text-center text-sm text-[var(--muted)]">
                         暂无版本记录
                       </div>
@@ -721,17 +720,7 @@ export default function Home() {
                     HsxMark
                   </span>
                 </p>
-                <div className="flex flex-col items-center gap-1 sm:items-end">
-                  <p>© 2026 三旋翼课程表. 保留所有权利.</p>
-                  <a
-                    href="https://beian.miit.gov.cn/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
-                  >
-                    鲁ICP备2026043859号-1
-                  </a>
-                </div>
+                <p>© 2026 三旋翼课程表. 保留所有权利.</p>
               </div>
             </div>
           </div>
