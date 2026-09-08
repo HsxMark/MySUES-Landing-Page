@@ -7,6 +7,7 @@ import { PageNavBar } from "@/components/page-nav-bar";
 import { SwitchThemeButton } from "@/components/switch-theme-button";
 import { Button, Card, Chip, Separator, Spinner } from "@heroui/react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   FaAndroid,
   FaApple,
@@ -701,6 +702,12 @@ export default function Home() {
                   >
                     GitHub
                   </a>
+                  <Link
+                    href="/privacy-policy"
+                    className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+                  >
+                    隐私政策
+                  </Link>
                 </div>
               </div>
             </div>

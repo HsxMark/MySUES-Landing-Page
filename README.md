@@ -9,6 +9,7 @@
 - **前端**: Next.js 16 + HeroUI v3 + Tailwind CSS v4
 - **后端**: FastAPI + PostgreSQL
 - **部署**: Docker Compose + Nginx
+- **隐私政策页**: `/privacy-policy` 二级页面由前端 `frontend/src/pages/privacy-policy.tsx` 渲染，正文与仓库根 `privacy.md` 一一对应（修改政策时需两处同步）。
 
 ## 快速开始
 
