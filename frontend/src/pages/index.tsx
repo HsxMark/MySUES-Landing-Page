@@ -157,6 +157,8 @@ const IOS_DEFAULT_URL = "https://testflight.apple.com/join/sFcAxekc";
 // 腾讯应用宝推广链接：微信内置浏览器唯一放行的下载通道，包名不可改
 const YYB_DEFAULT_URL =
   "https://a.app.qq.com/o/simple.jsp?pkgname=com.hsxmark.mysues";
+// 华为应用市场（鸿蒙）详情页：C118945097 为三旋翼课程表在 AppGallery 的 App ID
+const AG_DEFAULT_URL = "https://appgallery.huawei.com/app/C118945097";
 const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO || "HsxMark/MySUES";
 
 // ---- 可选：自定义 API 代理 / 下载代理 ----
@@ -569,6 +571,22 @@ export default function Home() {
                 src="/image/mysues/yingyongbao.svg"
                 alt="通过腾讯应用宝下载"
                 width={118}
+                height={42}
+                className="h-11 w-auto md:h-10"
+                unoptimized
+              />
+            </a>
+            <a
+              href={AG_DEFAULT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="通过华为应用市场下载鸿蒙版"
+              className="transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="/image/mysues/appgallery.svg"
+                alt="通过华为应用市场下载"
+                width={128}
                 height={42}
                 className="h-11 w-auto md:h-10"
                 unoptimized

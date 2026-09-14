@@ -70,3 +70,5 @@ npm run lint   # ESLint
 - 图标 / 截图：`public/image/mysues/`
 - 品牌 logo：`public/image/mysues/MySUES.png`
 - iOS TestFlight 徽章：`public/image/mysues/testflight.svg`
+- Android 应用宝徽章：`public/image/mysues/yingyongbao.svg`
+- 鸿蒙华为应用市场徽章：`public/image/mysues/appgallery.svg`
