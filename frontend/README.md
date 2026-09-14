@@ -71,4 +71,7 @@ npm run lint   # ESLint
 - 品牌 logo：`public/image/mysues/MySUES.png`
 - iOS TestFlight 徽章：`public/image/mysues/testflight.svg`
 - Android 应用宝徽章：`public/image/mysues/yingyongbao.svg`
-- 鸿蒙华为应用市场徽章：`public/image/mysues/appgallery.svg`
+- 鸿蒙华为应用市场徽章：`public/image/mysues/appgallery-light.png`（日间）
+  与 `appgallery-dark.png`（夜间）。华为 AGC 只提供日夜合一的原图，这两张
+  是裁好的产物（440×132，渲染高度的 3 倍），由 `globals.css` 的
+  `[data-theme]` 规则切换

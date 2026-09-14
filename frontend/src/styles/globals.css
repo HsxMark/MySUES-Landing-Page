@@ -101,3 +101,22 @@ body {
   color: var(--foreground);
   padding-bottom: var(--filing-banner-height);
 }
+
+/*
+ * 华为应用市场徽章：华为官方只提供「日夜合一」的素材，这里用裁剪出的两张图
+ * 跟随主题切换。用 [data-theme] 而不是 Tailwind 的 dark: 变体 —— 本项目没有
+ * 配置 @custom-variant，dark: 只认系统偏好，不认页面上的主题开关。
+ */
+.badge-appgallery-dark {
+  display: none;
+}
+
+.dark .badge-appgallery-light,
+[data-theme="dark"] .badge-appgallery-light {
+  display: none;
+}
+
+.dark .badge-appgallery-dark,
+[data-theme="dark"] .badge-appgallery-dark {
+  display: block;
+}

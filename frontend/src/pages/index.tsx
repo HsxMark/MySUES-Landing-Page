@@ -157,8 +157,9 @@ const IOS_DEFAULT_URL = "https://testflight.apple.com/join/sFcAxekc";
 // 腾讯应用宝推广链接：微信内置浏览器唯一放行的下载通道，包名不可改
 const YYB_DEFAULT_URL =
   "https://a.app.qq.com/o/simple.jsp?pkgname=com.hsxmark.mysues";
-// 华为应用市场（鸿蒙）详情页：C118945097 为三旋翼课程表在 AppGallery 的 App ID
-const AG_DEFAULT_URL = "https://appgallery.huawei.com/app/C118945097";
+// 华为应用市场（鸿蒙）推广短链：AppGallery Connect 生成的 H5 链接，channelId=官网
+// 不要带 ?shareTo=qrcode —— 那会把落地页切到二维码分享视图
+const AG_DEFAULT_URL = "https://url.cloud.huawei.com/C4YmhbbGrm";
 const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO || "HsxMark/MySUES";
 
 // ---- 可选：自定义 API 代理 / 下载代理 ----
@@ -583,12 +584,21 @@ export default function Home() {
               aria-label="通过华为应用市场下载鸿蒙版"
               className="transition-opacity hover:opacity-80"
             >
+              {/* 华为日间/夜间两版徽章，靠 globals.css 的 [data-theme] 规则切换 */}
               <Image
-                src="/image/mysues/appgallery.svg"
+                src="/image/mysues/appgallery-light.png"
                 alt="通过华为应用市场下载"
-                width={128}
-                height={42}
-                className="h-11 w-auto md:h-10"
+                width={440}
+                height={132}
+                className="badge-appgallery-light h-11 w-auto md:h-10"
+                unoptimized
+              />
+              <Image
+                src="/image/mysues/appgallery-dark.png"
+                alt="通过华为应用市场下载"
+                width={440}
+                height={132}
+                className="badge-appgallery-dark h-11 w-auto md:h-10"
                 unoptimized
               />
             </a>
