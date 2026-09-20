@@ -525,7 +525,7 @@ export default function AdminPage() {
                       className="w-full md:col-span-2"
                     >
                       <Label>外部跳转 URL</Label>
-                      <Input placeholder="iOS TestFlight / App Store / 备用下载地址" />
+                      <Input placeholder="iOS App Store / 备用下载地址" />
                     </TextField>
                     <TextField
                       value={releaseForm.filename}

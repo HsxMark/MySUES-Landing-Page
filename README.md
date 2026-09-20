@@ -27,7 +27,7 @@ npm start        # 默认 http://localhost:3000
 ```
 
 就这 4 步，无需 Docker、无需 PostgreSQL。页面在后端不可用时自动兜底：
-- **iOS** 下载 → TestFlight（内置链接）
+- **iOS** 下载 → App Store（内置链接）
 - **Android** 下载 → GitHub Releases（可用 `cp .env.local.example .env.local` 改为自己的 APK 直链）
 
 > 完整版（含 FastAPI 后端 + PostgreSQL，支持 `/admin` 版本管理与动态版本信息）见下文。

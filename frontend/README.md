@@ -26,8 +26,8 @@ npm start
 ```
 
 **要点：**
-- 页面在**后端不可用时自动兜底**：iOS 下载固定为 TestFlight
-  （`https://testflight.apple.com/join/sFcAxekc`），Android 下载使用
+- 页面在**后端不可用时自动兜底**：iOS 下载固定为 App Store
+  （`https://apps.apple.com/cn/app/三旋翼课程表/id6760910562`），Android 下载使用
   `.env.local` 里配置的地址（默认跳转 GitHub Releases）。
 - 无需 PostgreSQL、无需 Docker，单进程即可跑。
 - 若服务器上没有 `frontend/.env.local`，将使用内置默认值，照样可构建运行。
@@ -69,7 +69,7 @@ npm run lint   # ESLint
 
 - 图标 / 截图：`public/image/mysues/`
 - 品牌 logo：`public/image/mysues/MySUES.png`
-- iOS TestFlight 徽章：`public/image/mysues/testflight.svg`
+- iOS App Store 徽章：`public/image/mysues/appstore.svg`
 - Android 应用宝徽章：`public/image/mysues/yingyongbao.svg`
 - 鸿蒙华为应用市场徽章：`public/image/mysues/appgallery-light.png`（日间）
   与 `appgallery-dark.png`（夜间）。华为 AGC 只提供日夜合一的原图，这两张

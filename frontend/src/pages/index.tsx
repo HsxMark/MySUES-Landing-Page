@@ -153,7 +153,8 @@ const features = [
   },
 ];
 
-const IOS_DEFAULT_URL = "https://testflight.apple.com/join/sFcAxekc";
+const IOS_DEFAULT_URL =
+  "https://apps.apple.com/cn/app/%E4%B8%89%E6%97%8B%E7%BF%BC%E8%AF%BE%E7%A8%8B%E8%A1%A8/id6760910562";
 // 腾讯应用宝推广链接：微信内置浏览器唯一放行的下载通道，包名不可改
 const YYB_DEFAULT_URL =
   "https://a.app.qq.com/o/simple.jsp?pkgname=com.hsxmark.mysues";
@@ -549,12 +550,12 @@ export default function Home() {
               href={iosUpdateUrl ?? IOS_DEFAULT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="通过 TestFlight 下载 iOS 版"
+              aria-label="通过 App Store 下载 iOS 版"
               className="transition-opacity hover:opacity-80"
             >
               <Image
-                src="/image/mysues/testflight.svg"
-                alt="Download on the TestFlight"
+                src="/image/mysues/appstore.svg"
+                alt="Download on the App Store"
                 width={138}
                 height={42}
                 className="h-11 w-auto md:h-10"
