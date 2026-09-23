@@ -16,7 +16,6 @@ import {
   FaChevronDown,
   FaDownload,
   FaFileAlt,
-  FaFilePdf,
   FaGithub,
   FaLock,
   FaPalette,
@@ -134,11 +133,6 @@ const features = [
     icon: FaFileAlt,
     title: "考试信息",
     description: "查看考试时间、地点安排，不再错过任何一场考试。",
-  },
-  {
-    icon: FaFilePdf,
-    title: "PDF 导入",
-    description: "支持导入学校下发的 PDF 格式成绩单，离线也能看。",
   },
   {
     icon: FaPalette,
@@ -260,10 +254,6 @@ export default function Home() {
   const androidLatest = versions.length > 0 ? versions[0] : null;
   const iosUpdateUrl = IOS_DEFAULT_URL;
 
-  const importantNotice = androidLatest
-    ? `🎉 重要提示：Android 最新版 v${androidLatest.version} 已发布，推荐尽快更新。`
-    : null;
-
   const openUrl = (url: string | null | undefined) => {
     if (url) {
       window.open(url, "_blank");
@@ -299,14 +289,6 @@ export default function Home() {
           }
           actions={<SwitchThemeButton />}
         />
-
-        {importantNotice && (
-          <div className="sticky top-14 z-40 border-b-2 border-red-500/50 bg-red-500/10 px-4 py-3 text-center backdrop-blur-md">
-            <p className="text-sm font-semibold text-red-600 dark:text-red-400">
-              {importantNotice}
-            </p>
-          </div>
-        )}
 
         <section
           id="home"
